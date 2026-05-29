@@ -1,3 +1,27 @@
+/*
+  admin/src/pages/Login.jsx — Admin/Doctor login with role toggle.
+
+  Same pattern as the patient Login page but with a ROLE SELECTOR
+  instead of Sign Up/Login toggle. The `state` variable is 'Admin'
+  or 'Doctor' — it determines which API endpoint to call:
+    Admin:  POST /api/admin/login
+    Doctor: POST /api/doctor/login
+
+  On success, the token is saved to different localStorage keys:
+    Admin:  localStorage.setItem('aToken', data.token)
+    Doctor: localStorage.setItem('dToken', data.token)
+
+  And different context setters are called:
+    Admin:  setAToken(data.token)
+    Doctor: setDToken(data.token)
+
+  This is how App.jsx knows WHICH role logged in — it checks
+  which context has a truthy token value.
+
+  AUDIT NOTE: Same issues as the patient Login — no loading state,
+  no rate limiting, no password visibility toggle.
+*/
+
 import axios from 'axios'
 import React, { useContext, useState } from 'react'
 import { DoctorContext } from '../context/DoctorContext'
@@ -5,22 +29,16 @@ import { AdminContext } from '../context/AdminContext'
 import { toast } from 'react-toastify'
 
 const Login = () => {
-
-  const [state, setState] = useState('Admin')
-
+  const [state, setState] = useState('Admin') // 'Admin' or 'Doctor'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-
   const backendUrl = import.meta.env.VITE_BACKEND_URL
-
   const { setDToken } = useContext(DoctorContext)
   const { setAToken } = useContext(AdminContext)
 
-  const onSubmitHandler = async (event) => { 
+  const onSubmitHandler = async (event) => {
     event.preventDefault();
-
     if (state === 'Admin') {
-
       const { data } = await axios.post(backendUrl + '/api/admin/login', { email, password })
       if (data.success) {
         setAToken(data.token)
@@ -28,9 +46,7 @@ const Login = () => {
       } else {
         toast.error(data.message)
       }
-
     } else {
-
       const { data } = await axios.post(backendUrl + '/api/doctor/login', { email, password })
       if (data.success) {
         setDToken(data.token)
@@ -38,9 +54,7 @@ const Login = () => {
       } else {
         toast.error(data.message)
       }
-
     }
-
   }
 
   return (
@@ -67,3 +81,11 @@ const Login = () => {
 }
 
 export default Login
+
+/*
+  ┌─────────────────────────────────────────────────────────────┐
+  │  NEXT FILE: pages/Admin/Dashboard.jsx                       │
+  │                                                             │
+  │  The admin dashboard — stats cards + latest bookings list.  │
+  └─────────────────────────────────────────────────────────────┘
+*/

@@ -1,3 +1,45 @@
+/*
+╔══════════════════════════════════════════════════════════════╗
+║          admin/src/context/DoctorContext.jsx                 ║
+║  "Doctor's global state — appointments, dashboard, profile"  ║
+╚══════════════════════════════════════════════════════════════╝
+
+  PREVIOUSLY: AdminContext.
+  Now: DoctorContext — the doctor's data layer.
+
+  KEY DIFFERENCE — authHeader pattern:
+  ─────────────────────────────────────
+  While AdminContext uses `{ headers: { aToken } }` (custom header),
+  DoctorContext uses a STANDARD Authorization header:
+
+  const authHeader = {
+    headers: {
+      Authorization: `Bearer ${dToken}`,
+    },
+  };
+
+  This is the CORRECT way to send auth tokens in HTTP. The
+  "Bearer" scheme tells the server HOW to interpret the token.
+  The authDoctor middleware expects this format.
+
+  Why the inconsistency? The admin routes were built first (using
+  custom header). The doctor routes were built later and followed
+  the standard. Both work, but the doctor approach is better.
+
+  FUNCTIONS:
+    getAppointments()     → fetch THIS doctor's appointments
+    completeAppointment() → mark appointment as done
+    cancelAppointment()   → cancel an appointment
+    getDashData()         → fetch earnings + patient stats
+    getProfileData()      → fetch doctor's own profile
+
+  AUDIT NOTES:
+  [!] console.log of data.dashData and data.profileData are
+      leftover debug statements — should be removed in production.
+  [!] The dToken is stored in localStorage, same XSS vulnerability
+      as the patient app.
+*/
+
 import { createContext, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -19,14 +61,16 @@ const DoctorContextProvider = (props) => {
       Authorization: `Bearer ${dToken}`,
     },
   };
+  /*
+     Centralized auth header object. Instead of writing
+     { headers: { Authorization: `Bearer ${dToken}` } }
+     in every function, this is defined once and reused.
+     This is DRY (Don't Repeat Yourself) in action.
+  */
 
   const getAppointments = async () => {
     try {
-      const { data } = await axios.get(
-        backendUrl + "/api/doctor/appointments",
-        authHeader
-      );
-
+      const { data } = await axios.get(backendUrl + "/api/doctor/appointments", authHeader);
       if (data.success) {
         setAppointments(data.appointments.reverse());
       } else {
@@ -40,16 +84,11 @@ const DoctorContextProvider = (props) => {
 
   const completeAppointment = async (appointmentId) => {
     try {
-      const { data } = await axios.post(
-        backendUrl + "/api/doctor/complete-appointment",
-        { appointmentId },
-        authHeader
-      );
-
+      const { data } = await axios.post(backendUrl + "/api/doctor/complete-appointment", { appointmentId }, authHeader);
       if (data.success) {
         toast.success(data.message);
-        getAppointments();
-        getDashData();
+        getAppointments();  // Refresh list
+        getDashData();      // Refresh dashboard (earnings change)
       } else {
         toast.error(data.message);
       }
@@ -61,12 +100,7 @@ const DoctorContextProvider = (props) => {
 
   const cancelAppointment = async (appointmentId) => {
     try {
-      const { data } = await axios.post(
-        backendUrl + "/api/doctor/cancel-appointment",
-        { appointmentId },
-        authHeader
-      );
-
+      const { data } = await axios.post(backendUrl + "/api/doctor/cancel-appointment", { appointmentId }, authHeader);
       if (data.success) {
         toast.success(data.message);
         getAppointments();
@@ -82,14 +116,10 @@ const DoctorContextProvider = (props) => {
 
   const getDashData = async () => {
     try {
-      const { data } = await axios.get(
-        backendUrl + "/api/doctor/dashboard",
-        authHeader
-      );
-
+      const { data } = await axios.get(backendUrl + "/api/doctor/dashboard", authHeader);
       if (data.success) {
         setDashData(data.dashData);
-        console.log(data.dashData);
+        console.log(data.dashData); // DEBUG LEFTOVER
       } else {
         toast.error(data.message);
       }
@@ -101,14 +131,10 @@ const DoctorContextProvider = (props) => {
 
   const getProfileData = async () => {
     try {
-      const { data } = await axios.get(
-        backendUrl + "/api/doctor/profile",
-        authHeader
-      );
-
+      const { data } = await axios.get(backendUrl + "/api/doctor/profile", authHeader);
       if (data.success) {
         setProfileData(data.profileData);
-        console.log(data.profileData);
+        console.log(data.profileData); // DEBUG LEFTOVER
       } else {
         toast.error(data.message);
       }
@@ -119,20 +145,11 @@ const DoctorContextProvider = (props) => {
   };
 
   const value = {
-    dToken,
-    setDToken,
-    backendUrl,
-    getAppointments,
-    appointments,
-    setAppointments,
-    completeAppointment,
-    cancelAppointment,
-    getDashData,
-    dashData,
-    setDashData,
-    getProfileData,
-    setProfileData,
-    profileData,
+    dToken, setDToken, backendUrl,
+    getAppointments, appointments, setAppointments,
+    completeAppointment, cancelAppointment,
+    getDashData, dashData, setDashData,
+    getProfileData, setProfileData, profileData,
   };
 
   return (
@@ -143,3 +160,12 @@ const DoctorContextProvider = (props) => {
 };
 
 export default DoctorContextProvider;
+
+/*
+  ┌─────────────────────────────────────────────────────────────┐
+  │  NEXT FILE: components/Navbar.jsx (admin)                   │
+  │                                                             │
+  │  The admin/doctor navbar — shows role label, "User Panel"   │
+  │  button, and logout.                                        │
+  └─────────────────────────────────────────────────────────────┘
+*/

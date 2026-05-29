@@ -1,27 +1,34 @@
-import React from 'react'
-import { useContext } from 'react'
-import { useEffect } from 'react'
+/*
+  pages/Doctor/DoctorDashboard.jsx — Doctor's overview: earnings, stats, latest bookings.
+
+  Similar to the admin dashboard but shows:
+    - Earnings (total from completed/paid appointments)
+    - Appointment count
+    - Unique patient count
+    - Latest 5 bookings
+
+  The doctor has TWO actions per booking (vs admin's one):
+    - Cancel (red X icon)
+    - Complete (green check icon)
+
+  This is where doctors mark appointments as done — which
+  affects earnings calculation (see doctorController.js
+  doctorDashboard: earnings counted for completed OR paid).
+*/
+
+import React, { useContext, useEffect } from 'react'
 import { DoctorContext } from '../../context/DoctorContext'
 import { assets } from '../../assets/assets'
 import { AppContext } from '../../context/AppContext'
 
 const DoctorDashboard = () => {
-
   const { dToken, dashData, getDashData, cancelAppointment, completeAppointment } = useContext(DoctorContext)
   const { slotDateFormat, currency } = useContext(AppContext)
 
-
-  useEffect(() => {
-
-    if (dToken) {
-      getDashData()
-    }
-
-  }, [dToken])
+  useEffect(() => { if (dToken) { getDashData() } }, [dToken])
 
   return dashData && (
     <div className='m-5'>
-
       <div className='flex flex-wrap gap-3'>
         <div className='flex items-center gap-2 bg-white p-4 min-w-52 rounded border-2 border-gray-100 cursor-pointer hover:scale-105 transition-all'>
           <img className='w-14' src={assets.earning_icon} alt="" />
@@ -50,7 +57,6 @@ const DoctorDashboard = () => {
           <img src={assets.list_icon} alt="" />
           <p className='font-semibold'>Latest Bookings</p>
         </div>
-
         <div className='pt-4 border border-t-0'>
           {dashData.latestAppointments.slice(0, 5).map((item, index) => (
             <div className='flex items-center px-6 py-3 gap-3 hover:bg-gray-100' key={index}>
@@ -72,7 +78,6 @@ const DoctorDashboard = () => {
           ))}
         </div>
       </div>
-
     </div>
   )
 }

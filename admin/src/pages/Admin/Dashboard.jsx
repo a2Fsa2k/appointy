@@ -1,22 +1,45 @@
+/*
+  pages/Admin/Dashboard.jsx — Admin overview with stats + latest bookings.
+
+  Displays three stat cards (Doctors, Appointments, Patients count)
+  and a table of the 5 latest bookings.
+
+  The data comes from AdminContext.getDashData() which calls
+  GET /api/admin/dashboard. The backend returns:
+  {
+    doctors: <count>,
+    appointments: <count>,
+    patients: <count>,
+    latestAppointments: [5 most recent appointments]
+  }
+
+  The useEffect triggers on aToken change — when the admin logs in,
+  the dashboard data is fetched automatically.
+
+  Each booking row shows cancel action. If the appointment is
+  already cancelled or completed, it shows a label instead of
+  the cancel icon. This prevents double-cancelling.
+
+  Uses slotDateFormat from AppContext (same utility used across
+  the entire admin panel).
+*/
+
 import React, { useContext, useEffect } from 'react'
 import { assets } from '../../assets/assets'
 import { AdminContext } from '../../context/AdminContext'
 import { AppContext } from '../../context/AppContext'
 
 const Dashboard = () => {
-
   const { aToken, getDashData, cancelAppointment, dashData } = useContext(AdminContext)
   const { slotDateFormat } = useContext(AppContext)
 
   useEffect(() => {
-    if (aToken) {
-      getDashData()
-    }
+    if (aToken) { getDashData() }
   }, [aToken])
 
   return dashData && (
     <div className='m-5'>
-
+      {/* Stat Cards */}
       <div className='flex flex-wrap gap-3'>
         <div className='flex items-center gap-2 bg-white p-4 min-w-52 rounded border-2 border-gray-100 cursor-pointer hover:scale-105 transition-all'>
           <img className='w-14' src={assets.doctor_icon} alt="" />
@@ -40,12 +63,12 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Latest Bookings Table */}
       <div className='bg-white'>
         <div className='flex items-center gap-2.5 px-4 py-4 mt-10 rounded-t border'>
           <img src={assets.list_icon} alt="" />
           <p className='font-semibold'>Latest Bookings</p>
         </div>
-
         <div className='pt-4 border border-t-0'>
           {dashData.latestAppointments.slice(0, 5).map((item, index) => (
             <div className='flex items-center px-6 py-3 gap-3 hover:bg-gray-100' key={index}>
@@ -54,12 +77,15 @@ const Dashboard = () => {
                 <p className='text-gray-800 font-medium'>{item.docData.name}</p>
                 <p className='text-gray-600 '>Booking on {slotDateFormat(item.slotDate)}</p>
               </div>
-              {item.cancelled ? <p className='text-red-400 text-xs font-medium'>Cancelled</p> : item.isCompleted ? <p className='text-green-500 text-xs font-medium'>Completed</p> : <img onClick={() => cancelAppointment(item._id)} className='w-10 cursor-pointer' src={assets.cancel_icon} alt="" />}
+              {item.cancelled
+                ? <p className='text-red-400 text-xs font-medium'>Cancelled</p>
+                : item.isCompleted
+                  ? <p className='text-green-500 text-xs font-medium'>Completed</p>
+                  : <img onClick={() => cancelAppointment(item._id)} className='w-10 cursor-pointer' src={assets.cancel_icon} alt="" />}
             </div>
           ))}
         </div>
       </div>
-
     </div>
   )
 }

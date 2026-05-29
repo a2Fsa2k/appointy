@@ -1,3 +1,18 @@
+/*
+  admin/src/components/Sidebar.jsx — Role-aware navigation sidebar.
+
+  Shows DIFFERENT menu items based on which token is present:
+    Admin sees:  Dashboard, Appointments, Add Doctor, Doctors List
+    Doctor sees: Dashboard, Appointments, Profile
+
+  Uses NavLink from react-router-dom for active-state styling.
+  The className function receives { isActive } and conditionally
+  applies bg-[#F2F3FF] + border highlight to the current page.
+
+  This is the same pattern as the patient app's Navbar links,
+  but for vertical sidebar navigation instead of horizontal tabs.
+*/
+
 import React, { useContext } from 'react'
 import { assets } from '../assets/assets'
 import { NavLink } from 'react-router-dom'
@@ -5,14 +20,12 @@ import { DoctorContext } from '../context/DoctorContext'
 import { AdminContext } from '../context/AdminContext'
 
 const Sidebar = () => {
-
   const { dToken } = useContext(DoctorContext)
   const { aToken } = useContext(AdminContext)
 
   return (
     <div className='min-h-screen bg-white border-r'>
       {aToken && <ul className='text-[#515151] mt-5'>
-
         <NavLink to={'/admin-dashboard'} className={({ isActive }) => `flex items-center gap-3 py-3.5 px-3 md:px-9 md:min-w-72 cursor-pointer ${isActive ? 'bg-[#F2F3FF] border-r-4 border-primary' : ''}`}>
           <img className='min-w-5' src={assets.home_icon} alt='' />
           <p className='hidden md:block'>Dashboard</p>

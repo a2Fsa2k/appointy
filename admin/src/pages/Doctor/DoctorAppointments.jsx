@@ -1,34 +1,42 @@
-import React from 'react'
-import { useContext, useEffect } from 'react'
+/*
+  pages/Doctor/DoctorAppointments.jsx — Doctor's appointment list with actions.
+
+  Similar to admin's AllAppointments but SCOPED to only THIS doctor's
+  appointments (filtered by docId on the backend). Shows:
+
+    #, Patient name+photo, Payment mode (Online/CASH), Age,
+    Date & Time, Fees, Actions (cancel + complete)
+
+  The payment column shows "Online" if payment is true, "CASH" otherwise.
+  This is determined AT BOOKING TIME — the user selects cash vs online
+  when booking the appointment.
+
+  KEY DIFFERENCE from admin: The doctor has TWO action buttons:
+    1. Cancel (X icon) — cancel the appointment
+    2. Complete (check icon) — mark as completed (visit happened)
+
+  Completing an appointment adds its amount to the doctor's earnings.
+  Cancelling does NOT. This is how the doctor's dashboard calculates
+  total earnings.
+*/
+
+import React, { useContext, useEffect } from 'react'
 import { DoctorContext } from '../../context/DoctorContext'
 import { AppContext } from '../../context/AppContext'
 import { assets } from '../../assets/assets'
 
 const DoctorAppointments = () => {
-
   const { dToken, appointments, getAppointments, cancelAppointment, completeAppointment } = useContext(DoctorContext)
   const { slotDateFormat, calculateAge, currency } = useContext(AppContext)
 
-  useEffect(() => {
-    if (dToken) {
-      getAppointments()
-    }
-  }, [dToken])
+  useEffect(() => { if (dToken) { getAppointments() } }, [dToken])
 
   return (
     <div className='w-full max-w-6xl m-5 '>
-
       <p className='mb-3 text-lg font-medium'>All Appointments</p>
-
       <div className='bg-white border rounded text-sm max-h-[80vh] overflow-y-scroll'>
         <div className='max-sm:hidden grid grid-cols-[0.5fr_2fr_1fr_1fr_3fr_1fr_1fr] gap-1 py-3 px-6 border-b'>
-          <p>#</p>
-          <p>Patient</p>
-          <p>Payment</p>
-          <p>Age</p>
-          <p>Date & Time</p>
-          <p>Fees</p>
-          <p>Action</p>
+          <p>#</p><p>Patient</p><p>Payment</p><p>Age</p><p>Date & Time</p><p>Fees</p><p>Action</p>
         </div>
         {appointments.map((item, index) => (
           <div className='flex flex-wrap justify-between max-sm:gap-5 max-sm:text-base sm:grid grid-cols-[0.5fr_2fr_1fr_1fr_3fr_1fr_1fr] gap-1 items-center text-gray-500 py-3 px-6 border-b hover:bg-gray-50' key={index}>
@@ -56,7 +64,6 @@ const DoctorAppointments = () => {
           </div>
         ))}
       </div>
-
     </div>
   )
 }
