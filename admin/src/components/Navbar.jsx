@@ -43,7 +43,7 @@ const Navbar = () => {
   }
 
   const goToUserPanel = () => {
-    window.location.href = 'https://appointy-roan.vercel.app/'
+    window.location.href = 'https://appointy-three.vercel.app/'
     // AUDIT: Hardcoded URL — should be an env variable
   }
 
